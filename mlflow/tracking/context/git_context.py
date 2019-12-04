@@ -8,7 +8,7 @@ from mlflow.utils.mlflow_tags import MLFLOW_GIT_COMMIT
 _logger = logging.getLogger(__name__)
 
 
-def _get_git_commit(path):
+def _get_git_commit(path, clean_check=False):
     try:
         import git
     except ImportError as e:
@@ -20,7 +20,11 @@ def _get_git_commit(path):
         if os.path.isfile(path):
             path = os.path.dirname(path)
         repo = git.Repo(path, search_parent_directories=True)
-        commit = repo.head.commit.hexsha
+        if clean_check and repo.is_dirty(path=path, untracked_files=True):
+            _logger.info('Uncommitted changes found in %s, commit sha1 will not be used', path)
+            commit = None
+        else:
+            commit = repo.head.commit.hexsha
         return commit
     except (git.InvalidGitRepositoryError, git.GitCommandNotFound, ValueError, git.NoSuchPathError):
         return None

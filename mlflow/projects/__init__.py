@@ -793,7 +793,7 @@ def _get_docker_image_uri(repository_uri, work_dir):
     """
     repository_uri = repository_uri if repository_uri else "docker-project"
     # Optionally include first 7 digits of git SHA in tag name, if available.
-    git_commit = _get_git_commit(work_dir)
+    git_commit = _get_git_commit(work_dir, clean_check=True)
     version_string = ":" + git_commit[:7] if git_commit else ""
     return repository_uri + version_string
 

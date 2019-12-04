@@ -99,7 +99,7 @@ def test_docker_image_uri_with_git(get_git_commit_mock):
     get_git_commit_mock.return_value = '1234567890'
     image_uri = _get_docker_image_uri("my_project", "my_workdir")
     assert image_uri == "my_project:1234567"
-    get_git_commit_mock.assert_called_with('my_workdir')
+    get_git_commit_mock.assert_called_with('my_workdir', clean_check=True)
 
 
 @mock.patch('mlflow.projects._get_git_commit')
@@ -107,7 +107,7 @@ def test_docker_image_uri_no_git(get_git_commit_mock):
     get_git_commit_mock.return_value = None
     image_uri = _get_docker_image_uri("my_project", "my_workdir")
     assert image_uri == "my_project"
-    get_git_commit_mock.assert_called_with('my_workdir')
+    get_git_commit_mock.assert_called_with('my_workdir', clean_check=True)
 
 
 def test_docker_valid_project_backend_local():
