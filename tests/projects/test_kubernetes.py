@@ -38,17 +38,15 @@ def test_valid_kubernetes_job_spec():  # pylint: disable=unused-argument
                                      "      restartPolicy: Never\n")
     project_name = "mlflow-docker-example"
     image_tag = "image_tag"
-    image_digest = "5e74a5a"
     command = ['mlflow', 'run', '.', '--no-conda', '-P', 'alpha=0.5']
     env_vars = {'RUN_ID': '1'}
     job_definition = kb._get_kubernetes_job_definition(project_name=project_name,
                                                        image_tag=image_tag,
-                                                       image_digest=image_digest,
                                                        command=command, env_vars=env_vars,
                                                        job_template=custom_template)
     container_spec = job_definition['spec']['template']['spec']['containers'][0]
     assert container_spec['name'] == project_name
-    assert container_spec['image'] == image_tag + '@' + image_digest
+    assert container_spec['image'] == image_tag
     assert container_spec['command'] == command
     assert 2 == len(container_spec['env'])
     assert container_spec['env'][0]['name'] == 'DUMMY'
@@ -61,7 +59,6 @@ def test_run_kubernetes_job():
     active_run = mock.Mock()
     project_name = "mlflow-docker-example"
     image_tag = "image_tag"
-    image_digest = "5e74a5a"
     command = ['python train.py --alpha 0.5 --l1-ratio 0.1']
     env_vars = {'RUN_ID': '1'}
     kube_context = "docker-for-desktop"
@@ -83,9 +80,8 @@ def test_run_kubernetes_job():
         with mock.patch("kubernetes.client.BatchV1Api.create_namespaced_job") as kube_api_mock:
             submitted_run_obj = kb.run_kubernetes_job(project_name=project_name,
                                                       active_run=active_run, image_tag=image_tag,
-                                                      image_digest=image_digest, command=command,
-                                                      env_vars=env_vars, job_template=job_template,
-                                                      kube_context=kube_context)
+                                                      command=command, env_vars=env_vars,
+                                                      job_template=job_template, kube_context=kube_context)
 
             assert submitted_run_obj._mlflow_run_id == active_run.info.run_id
             assert submitted_run_obj._job_name.startswith(project_name)

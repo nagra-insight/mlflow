@@ -188,12 +188,11 @@ def _run(uri, experiment_id, entry_point="main", version=None, parameters=None,
                                     repository_uri=kube_config["repository-uri"],
                                     base_image=project.docker_env.get('image'),
                                     run_id=active_run.info.run_id)
-        image_digest = kb.push_image_to_registry(image.tags[0])
+        kb.push_image_to_registry(image.tags[0])
         submitted_run = kb.run_kubernetes_job(
             project.name,
             active_run,
             image.tags[0],
-            image_digest,
             _get_entry_point_command(project, entry_point, parameters, storage_dir),
             _get_run_env_vars(
                 run_id=active_run.info.run_uuid,

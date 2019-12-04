@@ -23,16 +23,14 @@ def push_image_to_registry(image_tag):
     return client.images.get_registry_data(image_tag).id
 
 
-def _get_kubernetes_job_definition(project_name, image_tag, image_digest,
-                                   command, env_vars, job_template):
-    container_image = image_tag + '@' + image_digest
+def _get_kubernetes_job_definition(project_name, image_tag, command, env_vars, job_template):
     timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')
     job_name = "{}-{}".format(project_name, timestamp)
     _logger.info("=== Creating Job %s ===", job_name)
     environment_variables = [{'name': k, 'value': v} for k, v in env_vars.items()]
     job_template['metadata']['name'] = job_name
     job_template['spec']['template']['spec']['containers'][0]['name'] = project_name
-    job_template['spec']['template']['spec']['containers'][0]['image'] = container_image
+    job_template['spec']['template']['spec']['containers'][0]['image'] = image_tag
     job_template['spec']['template']['spec']['containers'][0]['command'] = command
     if 'env' not in job_template['spec']['template']['spec']['containers'][0].keys():
         job_template['spec']['template']['spec']['containers'][0]['env'] = []
@@ -47,11 +45,10 @@ def _get_run_command(entrypoint_command):
     return formatted_command
 
 
-def run_kubernetes_job(project_name, active_run, image_tag, image_digest, command, env_vars,
+def run_kubernetes_job(project_name, active_run, image_tag, command, env_vars,
                        kube_context, job_template=None):
     job_template = _get_kubernetes_job_definition(project_name,
                                                   image_tag,
-                                                  image_digest,
                                                   _get_run_command(command),
                                                   env_vars,
                                                   job_template)
